@@ -2,17 +2,24 @@ import { describe, expect, it } from "vitest";
 
 import { generateEmptyProductMessage, parsePrice } from "./lib";
 
+
+const PRODUCTS = [
+  { category: "Fruits", price: "$5", stocked: true, name: "Dragon" },
+  { category: "Fruits", price: "$3", stocked: false, name: "Apple" },
+  { category: "Vegetables", price: "$1", stocked: true, name: "Carrot" },
+];
+
+const MAX_PRICE = Math.max(...PRODUCTS.map((p) => parsePrice(p.price)));
+
 describe("parsePrice", () => {
-  it("converts price strings to numbers", () => {
-    expect(parsePrice("$5")).toBe(5);
-    expect(parsePrice("$10")).toBe(10);
-    expect(parsePrice("$1")).toBe(1);
+  it("converts product price strings from controlled data", () => {
+    const expected = PRODUCTS.map((p) => Number(p.price.replace("$", "")));
+    const converted = PRODUCTS.map((p) => parsePrice(p.price));
+    expect(converted).toEqual(expected);
   });
 });
 
 describe("generateEmptyProductMessage", () => {
-  const MAX_PRICE = 5;
-
   it("returns generic message when no filters active", () => {
     expect(generateEmptyProductMessage("", false, MAX_PRICE, MAX_PRICE)).toBe(
       "No products found"
@@ -20,9 +27,10 @@ describe("generateEmptyProductMessage", () => {
   });
 
   it("shows search term when only search filter active", () => {
+  const { name } = PRODUCTS[1]; // Apple
     expect(
-      generateEmptyProductMessage("apple", false, MAX_PRICE, MAX_PRICE)
-    ).toBe('No products matching "apple"');
+      generateEmptyProductMessage(name, false, MAX_PRICE, MAX_PRICE)
+    ).toBe(`No products matching "${name}"`);
   });
 
   it("shows stock status when only stock filter active", () => {
@@ -38,14 +46,16 @@ describe("generateEmptyProductMessage", () => {
   });
 
   it('combines two conditions with "and"', () => {
+  const { name } = PRODUCTS[1]; // Apple
     expect(
-      generateEmptyProductMessage("apple", true, MAX_PRICE, MAX_PRICE)
-    ).toBe('No products matching "apple" and in stock');
+      generateEmptyProductMessage(name, true, MAX_PRICE, MAX_PRICE)
+    ).toBe(`No products matching "${name}" and in stock`);
   });
 
   it('combines three conditions with commas and "and"', () => {
-    expect(generateEmptyProductMessage("dragon", true, 2, MAX_PRICE)).toBe(
-      'No products matching "dragon", in stock and under $2'
+  const { name } = PRODUCTS[0]; // Dragon
+    expect(generateEmptyProductMessage(name, true, 2, MAX_PRICE)).toBe(
+      `No products matching "${name}", in stock and under $2`
     );
   });
 });
