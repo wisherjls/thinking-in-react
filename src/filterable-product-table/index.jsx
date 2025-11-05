@@ -7,15 +7,15 @@ import useFilters from "./use-filters";
  */
 export default function FilterableProductTable({ products }) {
   const {
-    filterText,
-    inStockOnly,
-    sortBy,
-    maxPrice,
-    setFilterText,
-    setInStockOnly,
-    setSortBy,
-    setMaxPrice,
-    clearFilters,
+  filterText,
+  inStockOnly,
+  sortBy,
+  priceLimit,
+  setFilterText,
+  setInStockOnly,
+  setSortBy,
+  setPriceLimit,
+  clearFilters,
   } = useFilters();
 
   return (
@@ -24,11 +24,11 @@ export default function FilterableProductTable({ products }) {
         filterText={filterText}
         inStockOnly={inStockOnly}
         sortBy={sortBy}
-        maxPrice={maxPrice}
+        priceLimit={priceLimit}
         onFilterTextChange={setFilterText}
         onInStockOnlyChange={setInStockOnly}
         onSortByChange={setSortBy}
-        onMaxPriceChange={setMaxPrice}
+        onPriceLimitChange={setPriceLimit}
         onClearFilters={clearFilters}
       />
       <ProductTable
@@ -36,7 +36,7 @@ export default function FilterableProductTable({ products }) {
         filterText={filterText}
         inStockOnly={inStockOnly}
         sortBy={sortBy}
-        maxPrice={maxPrice}
+        priceLimit={priceLimit}
       />
     </div>
   );
@@ -118,12 +118,12 @@ function ProductRow({ product }) {
  * @param {string} filterText
  * @param {boolean} inStockOnly
  * @param {string} sortBy
- * @param {number} maxPrice
+ * @param {number} priceLimit
  */
-function ProductTable({ products, filterText, inStockOnly, sortBy, maxPrice }) {
+function ProductTable({ products, filterText, inStockOnly, sortBy, priceLimit }) {
   const filteredAndSorted = products
     .filter((product) => {
-      const matchesPrice = parsePrice(product.price) <= maxPrice;
+      const matchesPrice = parsePrice(product.price) <= priceLimit;
       const matchesSearch = product.name
         .toLowerCase()
         .includes(filterText.toLowerCase());
@@ -198,7 +198,7 @@ function ProductTable({ products, filterText, inStockOnly, sortBy, maxPrice }) {
             {generateEmptyProductMessage(
               filterText,
               inStockOnly,
-              maxPrice,
+              priceLimit,
               MAX_PRODUCT_PRICE
             )}
           </p>
@@ -213,29 +213,29 @@ function ProductTable({ products, filterText, inStockOnly, sortBy, maxPrice }) {
  * @param {string} filterText
  * @param {boolean} inStockOnly
  * @param {string} sortBy
- * @param {number} maxPrice
+ * @param {number} priceLimit
  * @param {(text: string) => void} onFilterTextChange
  * @param {(checked: boolean) => void} onInStockOnlyChange
  * @param {(sort: string) => void} onSortByChange
- * @param {(price: number) => void} onMaxPriceChange
+ * @param {(price: number) => void} onPriceLimitChange
  * @param {() => void} onClearFilters
  */
 function SearchBar({
   filterText,
   inStockOnly,
   sortBy,
-  maxPrice,
+  priceLimit,
   onFilterTextChange,
   onInStockOnlyChange,
   onSortByChange,
-  onMaxPriceChange,
+  onPriceLimitChange,
   onClearFilters,
 }) {
   const hasActiveFilters =
     filterText ||
     inStockOnly ||
     sortBy !== "category" ||
-    maxPrice < MAX_PRODUCT_PRICE;
+    priceLimit < MAX_PRODUCT_PRICE;
 
   return (
     <form className="mb-6 space-y-4">
@@ -276,15 +276,15 @@ function SearchBar({
             htmlFor="price-slider"
             className="block text-sm font-medium text-green-800 mb-2"
           >
-            Max price: ${maxPrice}
+            Max price: ${priceLimit}
           </label>
           <input
             id="price-slider"
             type="range"
             min="1"
             max={MAX_PRODUCT_PRICE}
-            value={maxPrice}
-            onChange={(e) => onMaxPriceChange(Number(e.target.value))}
+            value={priceLimit}
+            onChange={(e) => onPriceLimitChange(Number(e.target.value))}
             className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600"
           />
         </div>
