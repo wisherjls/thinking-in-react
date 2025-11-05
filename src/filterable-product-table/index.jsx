@@ -1,3 +1,5 @@
+import React from "react";
+
 import { MAX_PRODUCT_PRICE } from "../constants";
 import { generateEmptyProductMessage, parsePrice } from "../lib";
 import useFilters from "./use-filters";
@@ -20,17 +22,17 @@ export default function FilterableProductTable({ products }) {
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 border-2 border-green-200">
-      <FilterBar
-        filterText={filterText}
-        inStockOnly={inStockOnly}
-        sortBy={sortBy}
-        priceLimit={priceLimit}
-        onFilterTextChange={setFilterText}
-        onInStockOnlyChange={setInStockOnly}
-        onSortByChange={setSortBy}
-        onPriceLimitChange={setPriceLimit}
-        onClearFilters={clearFilters}
-      />
+        <FilterBar
+          filterText={filterText}
+          inStockOnly={inStockOnly}
+          sortBy={sortBy}
+          priceLimit={priceLimit}
+          onFilterTextChange={setFilterText}
+          onInStockOnlyChange={setInStockOnly}
+          onSortByChange={setSortBy}
+          onPriceLimitChange={setPriceLimit}
+          onClearFilters={clearFilters}
+        />
       <ProductTable
         products={products}
         filterText={filterText}
@@ -220,6 +222,17 @@ function ProductTable({ products, filterText, inStockOnly, sortBy, priceLimit })
  * @param {(price: number) => void} onPriceLimitChange
  * @param {() => void} onClearFilters
  */
+function useClickSound() {
+  const clickAudioRef = React.useRef(null);
+  const playClickSound = React.useCallback(() => {
+    if (clickAudioRef.current) {
+      clickAudioRef.current.currentTime = 0;
+      clickAudioRef.current.play();
+    }
+  }, []);
+  return { clickAudioRef, playClickSound };
+}
+
 function FilterBar({
   filterText,
   inStockOnly,
@@ -229,8 +242,10 @@ function FilterBar({
   onInStockOnlyChange,
   onSortByChange,
   onPriceLimitChange,
-  onClearFilters,
+  onClearFilters
 }) {
+  const { clickAudioRef, playClickSound } = useClickSound();
+
   const hasActiveFilters =
     filterText ||
     inStockOnly ||
@@ -239,6 +254,11 @@ function FilterBar({
 
   return (
     <form className="mb-6 space-y-4">
+      {/* Click sound audio element (hidden) */}
+      <audio ref={clickAudioRef} src="/click.mp3" preload="auto" style={{ display: 'none' }}>
+        <track kind="captions" />
+      </audio>
+
       <label htmlFor="search-input" className="sr-only">
         Search products
       </label>
@@ -260,6 +280,7 @@ function FilterBar({
             value={sortBy}
             onChange={(e) => {
               onSortByChange(e.target.value);
+              playClickSound();
             }}
             className="w-full pl-4 pr-10 py-2 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 bg-white cursor-pointer appearance-none"
           >
@@ -284,7 +305,10 @@ function FilterBar({
             min="1"
             max={MAX_PRODUCT_PRICE}
             value={priceLimit}
-            onChange={(e) => onPriceLimitChange(Number(e.target.value))}
+            onChange={(e) => {
+              onPriceLimitChange(Number(e.target.value));
+              playClickSound();
+            }}
             className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600"
           />
         </div>
@@ -297,6 +321,7 @@ function FilterBar({
             checked={inStockOnly}
             onChange={(e) => {
               onInStockOnlyChange(e.target.checked);
+              playClickSound();
             }}
             className="w-5 h-5 accent-green-600 cursor-pointer"
           />
